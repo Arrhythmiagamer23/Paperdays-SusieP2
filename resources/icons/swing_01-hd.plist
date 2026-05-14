@@ -4,63 +4,63 @@
     <dict>
         <key>frames</key>
         <dict>
-            <key>bird_01_001.png</key>
+            <key>swing_01_001.png</key>
             <dict>
                 <key>aliases</key>
                 <array/>
                 <key>spriteOffset</key>
-                <string>{0,0}</string>
+                <string>{-2,0}</string>
                 <key>spriteSize</key>
-                <string>{37,16}</string>
+                <string>{68,60}</string>
                 <key>spriteSourceSize</key>
-                <string>{37,16}</string>
+                <string>{72,60}</string>
                 <key>textureRect</key>
-                <string>{{2,22},{37,16}}</string>
+                <string>{{76,2},{68,60}}</string>
+                <key>textureRotated</key>
+                <false/>
+            </dict>
+            <key>swing_01_2_001.png</key>
+            <dict>
+                <key>aliases</key>
+                <array/>
+                <key>spriteOffset</key>
+                <string>{11,6}</string>
+                <key>spriteSize</key>
+                <string>{20,19}</string>
+                <key>spriteSourceSize</key>
+                <string>{42,31}</string>
+                <key>textureRect</key>
+                <string>{{146,32},{20,19}}</string>
+                <key>textureRotated</key>
+                <false/>
+            </dict>
+            <key>swing_01_extra_001.png</key>
+            <dict>
+                <key>aliases</key>
+                <array/>
+                <key>spriteOffset</key>
+                <string>{11,7}</string>
+                <key>spriteSize</key>
+                <string>{28,25}</string>
+                <key>spriteSourceSize</key>
+                <string>{50,39}</string>
+                <key>textureRect</key>
+                <string>{{146,2},{28,25}}</string>
                 <key>textureRotated</key>
                 <true/>
             </dict>
-            <key>bird_01_2_001.png</key>
+            <key>swing_01_glow_001.png</key>
             <dict>
                 <key>aliases</key>
                 <array/>
                 <key>spriteOffset</key>
-                <string>{0,0}</string>
+                <string>{-2,0}</string>
                 <key>spriteSize</key>
-                <string>{35,14}</string>
+                <string>{72,64}</string>
                 <key>spriteSourceSize</key>
-                <string>{35,14}</string>
+                <string>{76,64}</string>
                 <key>textureRect</key>
-                <string>{{20,22},{35,14}}</string>
-                <key>textureRotated</key>
-                <false/>
-            </dict>
-            <key>bird_01_3_001.png</key>
-            <dict>
-                <key>aliases</key>
-                <array/>
-                <key>spriteOffset</key>
-                <string>{0,14}</string>
-                <key>spriteSize</key>
-                <string>{31,21}</string>
-                <key>spriteSourceSize</key>
-                <string>{31,49}</string>
-                <key>textureRect</key>
-                <string>{{20,38},{31,21}}</string>
-                <key>textureRotated</key>
-                <false/>
-            </dict>
-            <key>bird_01_glow_001.png</key>
-            <dict>
-                <key>aliases</key>
-                <array/>
-                <key>spriteOffset</key>
-                <string>{0,0}</string>
-                <key>spriteSize</key>
-                <string>{39,18}</string>
-                <key>spriteSourceSize</key>
-                <string>{39,18}</string>
-                <key>textureRect</key>
-                <string>{{2,2},{39,18}}</string>
+                <string>{{2,2},{72,64}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
@@ -74,13 +74,13 @@
             <key>premultiplyAlpha</key>
             <false/>
             <key>realTextureFileName</key>
-            <string>icons/bird_01.png</string>
+            <string>icons/swing_01-hd.png</string>
             <key>size</key>
-            <string>{57,61}</string>
+            <string>{173,68}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:59d3dfef0512a26c32bc2e51bef6fc96:7a442eaf1d0ba05930986047e4e415cf:b2e7c975fdaab78b7ea38df5a88334a9$</string>
+            <string>$TexturePacker:SmartUpdate:e19e8fef2ae12f5028cbb6fa3ed1748f:3632c9335cd134feab30a7128ca4aff4:9d04295466d5a031bb3d09b2984690f0$</string>
             <key>textureFileName</key>
-            <string>icons/bird_01.png</string>
+            <string>icons/swing_01-hd.png</string>
         </dict>
     </dict>
 </plist>

@@ -4,12 +4,16 @@ using namespace geode::prelude;
 
 #define saves getMod()->getSaveContainer
 
+#include <regex>
+
+#define IS_DEV_MODE fs::fileExistsInSearchPaths(CMAKE_CURRENT_SOURCE_DIR "/mod.json")
+
 namespace fs {
 	using namespace std::filesystem;
+	using namespace geode::cocos;
 	auto err = std::error_code{};
+	typedef CCFileUtils cocos;
 };
-
-#include <lr70.main-levels-editor/include/level.hpp>
 
 auto static FLASHES_MODE = [] { 
 	if (saves()["level"].asInt().unwrapOr(0) == 3) return true;
@@ -31,27 +35,31 @@ void disableIMEInpMod() {
 }
 $on_mod(Loaded) { disableIMEInpMod(); }
 
+// LOADING LAYER AND RESOURCE SETS
+
 #include <Geode/modify/LoadingLayer.hpp>
 class $modify(LoadingLayerExt, LoadingLayer) {
 	static void resourceSetup() {
 		auto resources_dir = getMod()->getResourcesDir();
 
 		auto tp = CCTexturePack();
-		tp.m_paths = { 
-			string::pathToString(resources_dir).c_str(), 
+		tp.m_paths = {
+			string::pathToString(CMAKE_CURRENT_SOURCE_DIR "/assets/files").c_str(),
+			string::pathToString(dirs::getGameDir()).c_str(),
+			string::pathToString(resources_dir).c_str(),
 			string::pathToString(resources_dir.parent_path()).c_str() //resources/../id
 		};
 		tp.m_id = "resources"_spr;
-		CCFileUtils::get()->addTexturePack(tp);
+		fs::cocos::get()->addTexturePack(tp);
 
-		for (const auto& entry : std::filesystem::recursive_directory_iterator(resources_dir)) {
+		for (const auto& entry : fs::recursive_directory_iterator(resources_dir)) {
 			if (!entry.is_regular_file()) continue;
 
 			auto ext = entry.path().extension().string();
 			std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
 			if (string::containsAny(ext, { ".png", ".jpg", ".jpeg", ".plist" })) {
-				auto relativePath = std::filesystem::relative(entry.path(), resources_dir);
+				auto relativePath = fs::relative(entry.path(), resources_dir);
 				auto sprite = CCSprite::create(string::pathToString(relativePath).c_str());
 				if (sprite) CCSpriteFrameCache::get()->addSpriteFrame(
 					sprite->displayFrame(), string::pathToString(relativePath).c_str()
@@ -60,23 +68,59 @@ class $modify(LoadingLayerExt, LoadingLayer) {
 		}
 
 		//happy
-		CCFileUtils::get()->m_fullPathCache["alphalaneous.happy_textures/bigFont.fnt"] = CCFileUtils::get()->fullPathForFilename(
+		fs::cocos::get()->m_fullPathCache["alphalaneous.happy_textures/bigFont.fnt"] = fs::cocos::get()->fullPathForFilename(
 			"bigFont.fnt"_spr, 0
 		);
-		CCFileUtils::get()->m_fullPathCache["alphalaneous.happy_textures/bigFont.png"] = CCFileUtils::get()->fullPathForFilename(
+		fs::cocos::get()->m_fullPathCache["alphalaneous.happy_textures/bigFont.png"] = fs::cocos::get()->fullPathForFilename(
 			"bigFont.png"_spr, 0
 		);
 
-		CCFileUtils::get()->m_fullPathCache["menuLoop.mp3"] = "";
+		fs::cocos::get()->m_fullPathCache["menuLoop.mp3"] = "";
 
 		for (auto path : file::readDirectory(getMod()->getResourcesDir()).unwrapOrDefault()) {
 			auto str = string::pathToString(path);
 			auto name = string::pathToString(path.filename());
 			auto nsub = string::replace(name, "..", "/");
-			if (string::contains(str, "..")) CCFileUtils::get()->m_fullPathCache[nsub] = CCFileUtils::get()->fullPathForFilename(
+			if (string::contains(str, "..")) fs::cocos::get()->m_fullPathCache[nsub] = fs::cocos::get()->fullPathForFilename(
 				name.c_str(), 0
 			);
 		}
+
+#define defineFallbacks(format_str, count) \
+    do { \
+        for (int _i = 1; _i <= (count); _i++) { \
+            std::string _key = fmt::format((format_str), _i); \
+            std::string _fallback = fmt::format((format_str), 1); \
+            fs::cocos::get()->m_fullPathCache[_key] = fs::cocos::get()->fullPathForFilename(_fallback.c_str(), 0); \
+        } \
+    } while(0)
+
+		defineFallbacks("dialogIcon_{:03d}.png", 56);
+		defineFallbacks("game_bg_{:02d}_001.png", 59);
+		defineFallbacks("gjFont{:02d}.png", 59);
+		defineFallbacks("gjFont{:02d}.fnt", 59);
+		defineFallbacks("groundSquare_{:02d}_001.png", 22);
+		defineFallbacks("groundSquare_{:02d}_2_001.png", 22);
+		defineFallbacks("PlayerExplosion_{:02d}.png", 19);
+		defineFallbacks("PlayerExplosion_{:02d}.plist", 19);
+		defineFallbacks("portalEffect{:02d}.plist", 9);
+
+		defineFallbacks("icons/bird_{:02d}.png", 149);
+		defineFallbacks("icons/bird_{:02d}.plist", 149);
+		defineFallbacks("icons/dart_{:02d}.png", 96);
+		defineFallbacks("icons/dart_{:02d}.plist", 96);
+		defineFallbacks("icons/jetpack_{:02d}.png", 8);
+		defineFallbacks("icons/jetpack_{:02d}.plist", 8);
+		defineFallbacks("icons/player_{:02d}.png", 485);
+		defineFallbacks("icons/player_{:02d}.plist", 485);
+		defineFallbacks("icons/robot_{:02d}.png", 68);
+		defineFallbacks("icons/robot_{:02d}.plist", 68);
+		defineFallbacks("icons/ship_{:02d}.png", 169);
+		defineFallbacks("icons/ship_{:02d}.plist", 169);
+		defineFallbacks("icons/spider_{:02d}.png", 69);
+		defineFallbacks("icons/spider_{:02d}.plist", 69);
+		defineFallbacks("icons/swing_{:02d}.png", 43);
+		defineFallbacks("icons/swing_{:02d}.plist", 43);
 	}
 	bool init(bool penis) {
 		resourceSetup();
@@ -149,11 +193,11 @@ class $modify(LoadingLayerExt, LoadingLayer) {
 
 		queueInMainThread([this_ = Ref(this)]
 			{
-				CCFileUtils::get()->m_fullPathCache["GJ_gradientBG.png"] = CCFileUtils::get()->fullPathForFilename(
+				fs::cocos::get()->m_fullPathCache["GJ_gradientBG.png"] = fs::cocos::get()->fullPathForFilename(
 					"loadingBG.png", 0
 				);
 				auto menubg = geode::createLayerBG();
-				CCFileUtils::get()->m_fullPathCache.erase("GJ_gradientBG.png");
+				fs::cocos::get()->m_fullPathCache.erase("GJ_gradientBG.png");
 				if (Ref a = this_->getParent()) a->addChild(menubg, -3);
 			}
 		);
@@ -162,67 +206,36 @@ class $modify(LoadingLayerExt, LoadingLayer) {
 	}
 };
 
+// MAIN MENU
+
 #include <Geode/modify/MenuLayer.hpp>
 class $modify(MenuLayerExt, MenuLayer) {
 	virtual void keyDown(cocos2d::enumKeyCodes p0) {
 		CCLayer::keyDown(p0);
 	};
 	static cocos2d::CCScene* scene(bool isVideoOptionsOpen) {
-		static auto killgame = false;
-		if (killgame) {
-			getMod()->saveData();
-			game::exit();
-		}
-		auto ragebaited = saves()["ragebaited"].asInt().unwrapOr(0);
-		auto ragebait_answered = saves()["ragebait_answered"].asBool().unwrapOr(false);
-		if (ragebaited and !ragebait_answered) {
-			auto name = std::string("properdies_ragebaited.level");
-			auto path = string::pathToString(CCFileUtils::get()->fullPathForFilename(name.c_str(), 0).c_str());
-			auto devmode = string::pathToString(
-				CMAKE_CURRENT_SOURCE_DIR "/assets/files/levels/" + name
-			);
-			if (fileExistsInSearchPaths(devmode.c_str())) {
-				Notification::create(" Level loaded from source folder :D\n " + devmode, NotificationIcon::Info, 3.f)->show();
-				path = devmode;
-			}
-			auto import = level::importLevelFile(path);
-			if (import.isOk()) {
-				killgame = true;
-				auto xd = PlayLayer::scene(import.unwrapOrDefault(), 0, 0);
-				return xd;
-			}
-			else {
-				Notification::create(
-					" Failed to import:\n " + path, NotificationIcon::Error, 3.f
-				)->show();
-				if (import.err()) Notification::create(
-					import.err().value_or("unk err .-."), 
-					NotificationIcon::Error, 3.f
-				)->show();
-			}
-		}
 		return MenuLayer::scene(isVideoOptionsOpen);
 	};
 	bool init() {
 
 		if (saves()["level"].asInt().unwrapOr(0) == 4) {
 			FLASHES_MODE = false;
-			CCFileUtils::get()->m_fullPathCache["menuLoop.mp3"] = CCFileUtils::get(
+			fs::cocos::get()->m_fullPathCache["menuLoop.mp3"] = fs::cocos::get(
 			)->fullPathForFilename("loading__ 1485147_In-The-Distance.mp3"_spr, 0);
-			CCFileUtils::get()->m_fullPathCache["menuBG_1a.png"] = CCFileUtils::get(
+			fs::cocos::get()->m_fullPathCache["menuBG_1a.png"] = fs::cocos::get(
 			)->fullPathForFilename("menuBG_lvl4a.png"_spr, 0);
-			CCFileUtils::get()->m_fullPathCache["menuBG_1b.png"] = CCFileUtils::get(
+			fs::cocos::get()->m_fullPathCache["menuBG_1b.png"] = fs::cocos::get(
 			)->fullPathForFilename("menuBG_lvl4b.png"_spr, 0);
 		}
 		else {
-			CCFileUtils::get()->m_fullPathCache.erase("menuLoop.mp3");
-			CCFileUtils::get()->m_fullPathCache.erase("menuBG_1a.png");
-			CCFileUtils::get()->m_fullPathCache.erase("menuBG_1b.png");
+			fs::cocos::get()->m_fullPathCache.erase("menuLoop.mp3");
+			fs::cocos::get()->m_fullPathCache.erase("menuBG_1a.png");
+			fs::cocos::get()->m_fullPathCache.erase("menuBG_1b.png");
 		}
 
-		if (FLASHES_MODE) CCFileUtils::get()->m_fullPathCache[
+		if (FLASHES_MODE) fs::cocos::get()->m_fullPathCache[
 			"menuLoop.mp3"
-		] = CCFileUtils::get()->fullPathForFilename(FLASHES_SONG(), 0);
+		] = fs::cocos::get()->fullPathForFilename(FLASHES_SONG(), 0);
 
 		if (!MenuLayer::init()) return false;
 
@@ -278,92 +291,11 @@ class $modify(MenuLayerExt, MenuLayer) {
 			return true;
 		};
 
-		auto static useful = 0;
-		if (!useful++) {
-			auto popup = createQuickPopup(
-				" \n            oh hi there! \n \n                    ar u useful????",
-				"aaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaa\naaaaaaaa", "no", "yes",
-				[](void*, bool yes) {
-					if (!yes) {
-						if (saves()["useful-confirmed"].asBool().unwrapOr(false)) {
-							saves()["ragebaited"] = saves()["ragebaited"].asInt().unwrapOr(0) + 1;
-							saves()["ragebait_answered"] = false;
-							getMod()->saveData();
-						};
-						game::exit();
-					}
-					GameManager::get()->playMenuMusic();
-					saves()["useful-confirmed"] = true;
-					getMod()->saveData();
-				}, !"show"
-			);
-			if (popup) if (auto g = popup->getGrid()) if (auto t = g->m_pTexture) t->setAliasTexParameters();
-			if (popup) if (auto a = popup->m_mainLayer->getChildByType<TextArea>(0)) a->setString(
-				" !*-the ceiling laughs. ya, it laughs. -\n"
-				" 2 are you me??? or am i you???\n"
-				"Ss-1 stop...the f ngers in the dark\n"
-				"aa a u.u.u.u. crying clocks 181 2\n"
-				"i see everythn, nothin, somethin...?\n"
-				"3 - 9 ...and so it begins again...\n"
-			);
-			if (auto a = popup->m_mainLayer->getChildByType<TextArea>(0)) a->setOpacity(12);
-			findFirstChildRecursive<CCNode>(popup->m_mainLayer,
-				[](CCNode* node) {
-					auto batched = typeinfo_cast<CCSpriteBatchNode*>(node->getParent());
-					auto label = typeinfo_cast<CCLabelProtocol*>(node->getParent());
-					if (batched and not label) return false;
-					auto dl = 5.0f;
-					auto dt = CCDelayTime::create(0.1f);
-					node->runAction(CCRepeatForever::create(CCSequence::create(
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() / dl),
-						dt, CCRotateTo::create(0.f, CCRANDOM_MINUS1_1() * dl),
-						nullptr
-					)));
-					auto p = node->getPosition();
-					node->runAction(CCRepeatForever::create(CCSequence::create(
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() * dl, CCRANDOM_MINUS1_1() * dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() * dl, CCRANDOM_MINUS1_1() * dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() / dl, CCRANDOM_MINUS1_1() / dl)),
-						dt, CCMoveTo::create(0.f, p + CCPointMake(CCRANDOM_MINUS1_1() * dl, CCRANDOM_MINUS1_1() * dl)),
-						nullptr
-					)));
-					return false;
-				}
-			);
-			popup->m_noElasticity = this;
-			popup->m_scene = this;
-			popup->show();
-			popup->setOpacity(255);
-			GameManager::get()->fadeInMusic("hi.mp3");
-		}
-
-		CCFileUtils::get()->m_fullPathCache["GJ_gradientBG.png"] = CCFileUtils::get()->fullPathForFilename(
+		fs::cocos::get()->m_fullPathCache["GJ_gradientBG.png"] = fs::cocos::get()->fullPathForFilename(
 			"menuBG_1a.png", 0
 		);
 		Ref bg = geode::createLayerBG();
-		CCFileUtils::get()->m_fullPathCache.erase("GJ_gradientBG.png");
+		fs::cocos::get()->m_fullPathCache.erase("GJ_gradientBG.png");
 		bg->setColor(ccWHITE);
 		addChild(bg);
 		Ref bganim1 = CCSprite::create("menuBG_1a.png");
@@ -376,10 +308,10 @@ class $modify(MenuLayerExt, MenuLayer) {
 			nullptr
 		)));
 
-		CCFileUtils::get()->m_fullPathCache["GJ_gradientBG.png"] = CCFileUtils::get(
+		fs::cocos::get()->m_fullPathCache["GJ_gradientBG.png"] = fs::cocos::get(
 		)->fullPathForFilename("flashes1.png", 0);
 		auto flashes = geode::createLayerBG();
-		CCFileUtils::get()->m_fullPathCache.erase("GJ_gradientBG.png");
+		fs::cocos::get()->m_fullPathCache.erase("GJ_gradientBG.png");
 		flashes->setColor(ccWHITE);
 		addChild(flashes);
 		std::vector<Ref<CCSprite>> flashes_list;
@@ -529,10 +461,10 @@ void main(void) {
 			}
 		}
 
-		CCFileUtils::get()->m_fullPathCache["GJ_gradientBG.png"] = CCFileUtils::get(
+		fs::cocos::get()->m_fullPathCache["GJ_gradientBG.png"] = fs::cocos::get(
 		)->fullPathForFilename("menuBG_2.png", 0);
 		auto menubg = geode::createLayerBG();
-		CCFileUtils::get()->m_fullPathCache.erase("GJ_gradientBG.png");
+		fs::cocos::get()->m_fullPathCache.erase("GJ_gradientBG.png");
 		addChild(menubg);
 
 		addChild(menu);
@@ -544,11 +476,10 @@ void main(void) {
 		menu->addChild(title);
 
 		auto verl = SimpleTextArea::create(fmt::format(
-			"SDK {} on {}, Release {} (Dev, {})",
+			"SDK {} on {}, Release v{}",
 			Mod::get()->getMetadataRef().getGeodeVersion().toVString(),
 			GEODE_PLATFORM_NAME,
-			Mod::get()->getVersion().toVString(),
-			std::filesystem::file_size(getMod()->getPackagePath())
+			fs::file_size(getMod()->getPackagePath(), fs::err)
 		).c_str(), "chatFont.fnt", 0.6f)->getLines()[0];
 		verl->setOpacity(63);
 		menu->addChild(verl);
@@ -629,7 +560,7 @@ void main(void) {
 		static auto id = getMod()->getID();
 		static auto repo = getMod()->getMetadataRef().getLinks().getSourceURL().value_or("https://github.com/LatterRarity70/Paperdays");
 		auto AltK = CCKeyboardDispatcher::get()->getAltKeyPressed();
-		if (AltK or not fs::exists(CMAKE_CURRENT_SOURCE_DIR)) {
+		if (AltK or not IS_DEV_MODE) {
 			auto webListener = new EventListener<web::WebTask>;
 			webListener->bind(
 				[_this = Ref(this), webListener](web::WebTask::Event* e) {
@@ -723,6 +654,8 @@ void main(void) {
 	}
 };
 
+// ENGINE NODES
+
 #include <Geode/modify/CCNode.hpp>
 class $modify(NodeVisitController, CCNode) {
 	auto replaceColors() {
@@ -756,10 +689,10 @@ class $modify(NodeVisitController, CCNode) {
 	}
 	$override void addChild(CCNode* child, int zOrder, int tag) {
 		if (child) CCNode::addChild(child, zOrder, tag);
+		else log::error("Tried to add {} child to {}!", child, this);
 	}
 	$override void visit() {
-		CCNode::visit();
-		if (CCKeyboardDispatcher::get()->getControlKeyPressed()) return;
+		if (CCKeyboardDispatcher::get()->getControlKeyPressed()) return CCNode::visit();
 		if (Ref node = typeinfo_cast<GJListLayer*>(this)) {
 			if (node->getOpacity() == 180) node->setOpacity(255);// list-bg
 		}
@@ -796,6 +729,17 @@ class $modify(NodeVisitController, CCNode) {
 				Ref(this)->CCNode::addChild(input);
 			}
 		}
+
+		CCNode::visit();
+	}
+};
+
+#include <Geode/modify/CCSprite.hpp>
+class $modify(CCSpriteExt, CCSprite) {
+	static CCSprite* createWithTexture(CCTexture2D * pTexture) {
+		if (!pTexture) pTexture = CCSprite::create()->getTexture();
+		auto rtn = CCSprite::createWithTexture(pTexture);
+		return rtn ? rtn : CCSprite::create();
 	}
 };
 
@@ -824,42 +768,18 @@ class $modify(CCSpriteFrameCacheExt, CCSpriteFrameCache) {
 			auto test = CCSpriteFrameCache::get()->m_pSpriteFrames->objectForKey(test_name);
 			name = test ? test_name.data() : name.c_str();
 		}
+		//icon fallbacks
+		if (string::endsWith(name, "_001.png") and string::containsAny(
+			name, {"bird_", "dart_", "jetpack_", "player_", "robot_", "ship_", "spider_", "swing_"}
+		)) {
+			std::regex pattern(R"_(_(\d{2})_)_");
+			name = std::regex_replace(name, pattern, "_01_");
+		}
 		return CCSpriteFrameCache::spriteFrameByName(name.c_str());
 	};
 };
 
-#include <Geode/modify/LevelSelectLayer.hpp>
-class $modify(LevelSelectLayerExt, LevelSelectLayer) {
-	static cocos2d::CCScene* scene(int p0) {
-		if (CCKeyboardDispatcher::get()->getControlKeyPressed()) return LevelSelectLayer::scene(p0);
-		auto level = getMod()->getSavedValue("level", 0);
-		auto name = ("properdies_" + utils::numToString(level) + ".level");
-		auto path = string::pathToString(CCFileUtils::get()->fullPathForFilename(name.c_str(), 0).c_str());
-		auto devmode = string::pathToString(
-			CMAKE_CURRENT_SOURCE_DIR "/assets/files/levels/" + name
-		);
-		if (fileExistsInSearchPaths(devmode.c_str())) { 
-			Notification::create(" Level loaded from source folder :D\n " + devmode, NotificationIcon::Info, 3.f)->show();
-			path = devmode; 
-		}
-		auto import = level::importLevelFile(path);
-		if (import.isOk()) {
-			auto levelll = import.unwrapOrDefault();
-			auto xd = PlayLayer::scene(levelll ? levelll : GJGameLevel::create(), 0, 0);
-			return xd;
-		}
-		else {
-			Notification::create(
-				" Failed to import:\n " + path, NotificationIcon::Error, 3.f
-			)->show();
-			if (import.err()) Notification::create(
-				import.err().value_or("unk err .-."), 
-				NotificationIcon::Error, 3.f
-			)->show();
-			return LevelSelectLayer::scene(p0);
-		}
-	};
-};
+// OPTIONS
 
 #include <Geode/modify/MoreOptionsLayer.hpp>
 class $modify(MoreOptionsLayerExt, MoreOptionsLayer) {
@@ -924,4 +844,60 @@ class $modify(MoreOptionsLayerExt, MoreOptionsLayer) {
 
 		MoreOptionsLayer::addToggle(name, tag, desc);
 	};
+};
+
+// LEVELS
+
+#include <Geode/modify/LevelSelectLayer.hpp>
+class $modify(LevelSelectLayerExt, LevelSelectLayer) {
+	static cocos2d::CCScene* scene(int p0) {
+		if (CCKeyboardDispatcher::get()->getControlKeyPressed()) return LevelSelectLayer::scene(p0);
+		auto id = getMod()->getSavedValue("level", 0);
+		auto level = GJGameLevel::create();
+		level->m_autoLevel = true;
+		level->m_levelID = id;
+		level->m_levelName = "pt" + fmt::format("{:03}", id);
+		level->m_levelType = IS_DEV_MODE ? GJLevelType::Editor : GJLevelType::Main;
+		level->m_isEditable = level->m_levelType == GJLevelType::Editor;
+		level->m_levelString = LocalLevelManager::get()->getMainLevelString(id);
+		return PlayLayer::scene(level, 0, 0);
+	};
+};
+
+#include <Geode/modify/LevelTools.hpp>
+class $modify(LevelToolsExt, LevelTools) {
+	static bool verifyLevelIntegrity(gd::string p0, int p1) { return true; }
+};
+
+#include <Geode/modify/MusicDownloadManager.hpp>
+class $modify(MusicDownloadManagerExt, MusicDownloadManager) {
+	gd::string pathForSFX(int id) {
+		fs::path ref = MusicDownloadManager::pathForSFX(id).c_str();
+		auto as = fmt::format("sfx.{}{}", id, ref.extension());
+		if (fs::fileExistsInSearchPaths(as.c_str())) return fs::cocos::get()->fullPathForFilename(as.c_str(), 0);
+		return MusicDownloadManager::pathForSFX(id);
+	};
+	gd::string pathForSong(int id) {
+		fs::path ref = MusicDownloadManager::pathForSong(id).c_str();
+		auto as = fmt::format("song.{}{}", id, ref.extension());
+		if (fs::fileExistsInSearchPaths(as.c_str())) return fs::cocos::get()->fullPathForFilename(as.c_str(), 0);
+		return MusicDownloadManager::pathForSong(id);
+	}
+};
+
+#include <Geode/modify/EditorPauseLayer.hpp>
+class $modify(MLE_EditorPauseLayer, EditorPauseLayer) {
+	$override void saveLevel() {
+		EditorPauseLayer::saveLevel();
+		auto level = m_editorLayer->m_level;
+		if (!level->m_autoLevel) return;
+		auto file = fmt::format("levels/{}.txt", level->m_levelID);
+		file::writeString(fs::cocos::get()->fullPathForFilename(file.c_str(), 0).c_str(), level->m_levelString.c_str()).err();
+		LocalLevelManager::get()->m_mainLevels[level->m_levelID] = level->m_levelString.c_str();
+		// also save to resources if it exists
+		if (fs::fileExistsInSearchPaths((CMAKE_CURRENT_SOURCE_DIR "/resources/" + file).c_str())) {
+			file = CMAKE_CURRENT_SOURCE_DIR "/resources/" + file;
+			file::writeString(file.c_str(), level->m_levelString.c_str()).err();
+		}
+	}
 };

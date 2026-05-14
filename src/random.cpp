@@ -1,6 +1,32 @@
 #include <Geode/Geode.hpp>
 using namespace geode::prelude;
 
+#include <Geode/modify/CCString.hpp>
+class $modify(CCStringNilCallFix, CCString) {
+	const char* getCString() {
+		//log::debug("{}(int:{})->{}", this, (int)this, __func__);
+		if (!this) log::error("{}->{}", this, __func__);
+		return this ? CCString::getCString() : CCString::createWithFormat("")->getCString();
+	}
+};
+
+#include <Geode/modify/CCObject.hpp>
+class $modify(CCObjectCallFix, CCObject) {
+	void release(void) {
+		if (!this) log::error("{}->{}", this, __func__);
+		return this ? CCObject::release() : void();
+	};
+	void retain(void) {
+		if (!this) log::error("{}->{}", this, __func__);
+		else if (auto t = typeinfo_cast<CCTexture2D*>(this)) t->setAliasTexParameters(); 
+		return this ? CCObject::retain() : void();
+	};
+	CCObject* autorelease(void) {
+		if (!this) log::error("{}->{}", this, __func__);
+		return this ? CCObject::autorelease() : new CCObject();
+	};
+};
+
 #include <Geode/modify/CCMenuItemSpriteExtra.hpp>
 class $modify(CCMenuItemSpriteExtraExt, CCMenuItemSpriteExtra) {
 	$override void selected() {

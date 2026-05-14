@@ -4,63 +4,48 @@
     <dict>
         <key>frames</key>
         <dict>
-            <key>bird_01_001.png</key>
+            <key>dart_01_001.png</key>
             <dict>
                 <key>aliases</key>
                 <array/>
                 <key>spriteOffset</key>
                 <string>{0,0}</string>
                 <key>spriteSize</key>
-                <string>{37,16}</string>
+                <string>{102,82}</string>
                 <key>spriteSourceSize</key>
-                <string>{37,16}</string>
+                <string>{102,82}</string>
                 <key>textureRect</key>
-                <string>{{2,22},{37,16}}</string>
-                <key>textureRotated</key>
-                <true/>
-            </dict>
-            <key>bird_01_2_001.png</key>
-            <dict>
-                <key>aliases</key>
-                <array/>
-                <key>spriteOffset</key>
-                <string>{0,0}</string>
-                <key>spriteSize</key>
-                <string>{35,14}</string>
-                <key>spriteSourceSize</key>
-                <string>{35,14}</string>
-                <key>textureRect</key>
-                <string>{{20,22},{35,14}}</string>
+                <string>{{114,2},{102,82}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
-            <key>bird_01_3_001.png</key>
+            <key>dart_01_2_001.png</key>
             <dict>
                 <key>aliases</key>
                 <array/>
                 <key>spriteOffset</key>
-                <string>{0,14}</string>
+                <string>{-32,0}</string>
                 <key>spriteSize</key>
-                <string>{31,21}</string>
+                <string>{20,40}</string>
                 <key>spriteSourceSize</key>
-                <string>{31,49}</string>
+                <string>{84,40}</string>
                 <key>textureRect</key>
-                <string>{{20,38},{31,21}}</string>
+                <string>{{218,2},{20,40}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
-            <key>bird_01_glow_001.png</key>
+            <key>dart_01_glow_001.png</key>
             <dict>
                 <key>aliases</key>
                 <array/>
                 <key>spriteOffset</key>
                 <string>{0,0}</string>
                 <key>spriteSize</key>
-                <string>{39,18}</string>
+                <string>{110,90}</string>
                 <key>spriteSourceSize</key>
-                <string>{39,18}</string>
+                <string>{110,90}</string>
                 <key>textureRect</key>
-                <string>{{2,2},{39,18}}</string>
+                <string>{{2,2},{110,90}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
@@ -74,13 +59,13 @@
             <key>premultiplyAlpha</key>
             <false/>
             <key>realTextureFileName</key>
-            <string>icons/bird_01.png</string>
+            <string>icons/dart_01-uhd.png</string>
             <key>size</key>
-            <string>{57,61}</string>
+            <string>{240,94}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:59d3dfef0512a26c32bc2e51bef6fc96:7a442eaf1d0ba05930986047e4e415cf:b2e7c975fdaab78b7ea38df5a88334a9$</string>
+            <string>$TexturePacker:SmartUpdate:038619eb29e27aa37e8f3c51f7b034e0:eb70feec35028dcf4e6bab40730dee96:5f0c3c811c672100a73fbfb766864238$</string>
             <key>textureFileName</key>
-            <string>icons/bird_01.png</string>
+            <string>icons/dart_01-uhd.png</string>
         </dict>
     </dict>
 </plist>

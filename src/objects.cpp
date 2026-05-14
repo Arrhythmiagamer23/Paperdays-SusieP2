@@ -4,27 +4,27 @@
 #define saves getMod()->getSaveContainer
 
 #include <Geode/modify/GJGameLoadingLayer.hpp>
-class $modify(GJGameLoadingLayerWhatTheF, GJGameLoadingLayer) {
-	virtual void onEnter() {
-		GJGameLoadingLayer::onEnter();
-		if (!this) return;
-		if (!typeinfo_cast<GJGameLoadingLayer*>(this)) return;
-		if (this->m_level) {
-			loadLevel();
+class $modify(GJGameLoadingLayerFuckYouuu, GJGameLoadingLayer) {
+	class hop : public CCLayer {
+	public:
+		CREATE_FUNC(hop);
+		void sch(float) {
+			Ref layer = getParent()->getChildByType<EditLevelLayer*>(0);
+			layer->getSkewX() ? layer->onEdit(this) : layer->onPlay(this);
 		}
-	};
-};
-
-#include <Geode/modify/GameObject.hpp>
-class $modify(GameObjectsExt, GameObject) {
-	virtual void customSetup() {
-		GameObject::customSetup();
-		if (this and typeinfo_cast<GameObject*>(this)) {
-			if (auto tex = this->getTexture())
-				tex->setAliasTexParameters();
-			if (auto g = this->getGrid())
-				if (auto t = g->m_pTexture) t->setAliasTexParameters();
+		void onEnterTransitionDidFinish() override {
+			CCLayer::onEnterTransitionDidFinish();
+			scheduleOnce(schedule_selector(hop::sch), 0.1f);
 		};
+	};
+	static GJGameLoadingLayer* transitionToLoadingLayer(GJGameLevel * level, bool editor) {
+		Ref layer = EditLevelLayer::create(level);
+		switchToScene(layer);
+		layer->setScale(0.f);
+		layer->setSkewX(editor);
+		layer->setKeypadEnabled(false);
+		layer->getParent()->addChild(hop::create());
+		return nullptr;
 	}
 };
 
@@ -873,13 +873,17 @@ class $modify(DialogTrigger, DialogLayer) {
 #include <Geode/modify/EffectGameObject.hpp>
 class $modify(MenuItemGameObject, EffectGameObject) {
 
-	class CCMenuItem : public cocos2d::CCMenuItem {
+	class CCMenuItem : public CCMenuItemSpriteExtra {
 	public:
 		CREATE_FUNC(CCMenuItem);
 		virtual bool init() {
-			CCMenuItem::initWithTarget(this, nullptr);
+			CCMenuItemSpriteExtra::init(CCNode::create(), CCNode::create(), nullptr, nullptr);
 			this->setAnchorPoint({ 0.5f, 0.5f });
 			this->setEnabled(true);
+			m_animationEnabled = false;
+			m_colorEnabled = false;
+			m_activateSound = "no sound";
+			m_selectSound = "no sound";
 			return true;
 		};
 		std::function<void(void)> m_onActivate = []() {};
@@ -968,7 +972,7 @@ class $modify(MenuItemGameObject, EffectGameObject) {
 
 	static void setup() {
 		conf = GameObjectsFactory::createRingConfig(
-			UNIQ_ID("menu-item"), "menu-item.png"_spr
+			UNIQ_ID("menu-item"), "menu-item.png"
 		)->refID(3640)->tab(12)->insertIndex((12 * 6) + 3)->onEditObject(
 			[](EditorUI* a, GameObject* aa) -> bool {
 				queueInMainThread(
@@ -1004,7 +1008,7 @@ class $modify(MenuItemGameObject, EffectGameObject) {
 				object->m_addToNodeContainer = true;
 				object->m_outerSectionIndex = -1;
 				object->m_isInvisible = false;
-				object->setDisplayFrame(object->m_editorEnabled ? 
+				object->setDisplayFrame(object->m_editorEnabled ?
 					object->displayFrame() : CCSprite::create()->displayFrame()
 				);
 			}
@@ -1033,18 +1037,21 @@ class $modify(MenuItemGameObject, EffectGameObject) {
 
 				Ref item = CCMenuItem::create();
 				if (item) {
+					typedef gd::vector<int> xd;
 					//virtual void spawnGroup(int group, bool ordered, double delay, gd::vector<int> const& remapKeys, int triggerID, int controlID);
-					item->onActivate([game, data = Ref(MenuItemObjectData(object))] {
+					item->onActivate([game = Ref(GameManager::get()->m_gameLayer), data = Ref(MenuItemObjectData(object))] {
 						if (game) game->spawnGroup(data->get("activate").asInt().unwrapOr(0), false, 0, gd::vector<int>(), -1, -1);
 						});
-					item->onSelected([game, data = Ref(MenuItemObjectData(object))] {
+					item->onSelected([game = Ref(GameManager::get()->m_gameLayer), data = Ref(MenuItemObjectData(object))] {
 						if (game) game->spawnGroup(data->get("selected").asInt().unwrapOr(0), false, 0, gd::vector<int>(), -1, -1);
 						});
-					item->onUnselected([game, data = Ref(MenuItemObjectData(object))] {
+					item->onUnselected([game = Ref(GameManager::get()->m_gameLayer), data = Ref(MenuItemObjectData(object))] {
 						if (game) game->spawnGroup(data->get("unselected").asInt().unwrapOr(0), false, 0, gd::vector<int>(), -1, -1);
 						});
+					item->setUserObject("menu-item-object", object);
 					item->setTag(uid);
-				} else return;
+				}
+				else return;
 				menu->setTouchEnabled(false);
 				menu->setTouchEnabled(true);
 
@@ -1193,12 +1200,15 @@ class $modify(SelectEventLayerKeysExt, SelectEventLayer) {
 	}
 };
 
-
 #include <Geode/modify/CustomizeObjectLayer.hpp>
 class $modify(CustomizeObjectLayerExt, CustomizeObjectLayer) {
 	bool init(GameObject * object, cocos2d::CCArray * objects) {
 		if (!CustomizeObjectLayer::init(object, objects)) return false;
 		if (auto a = m_mainLayer->getChildByType<CCScale9Sprite>(0)) a->setOpacity(0);
+		if (Ref input = m_textInput) {
+			input->setAllowedChars("\n\t !\"#$ * &'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+			input->setMaxLabelLength(255);
+		}
 		return true;
 	}
 };
@@ -1207,43 +1217,62 @@ class $modify(CustomizeObjectLayerExt, CustomizeObjectLayer) {
 class $modify(TextGameObjectImageExt, TextGameObject) {
 	CCSpriteFrame* tryGetSpriteFrame() {
 		auto name = std::string(m_text.c_str());
-		if (fileExistsInSearchPaths(name.c_str())) {
-			auto spr = CCSprite::create(name.c_str());
-			return (spr ? spr : CCSprite::create())->displayFrame();
-		}
 		if (CCSpriteFrameCache::get()->m_pSpriteFrames->objectForKey(name.c_str())) {
 			auto spr = CCSprite::createWithSpriteFrameName(name.c_str());
 			return (spr ? spr : CCSprite::create())->displayFrame();
 		}
+		if (fileExistsInSearchPaths(name.c_str())) {
+			auto spr = CCSprite::create(name.c_str());
+			return (spr ? spr : CCSprite::create())->displayFrame();
+		}
 		return nullptr;
 	}
-	void trySetupCustomSprite() {
+	void trySetupCustomSprite(float = 0.f) {
+		if (!this) return;
 		if (auto frame = tryGetSpriteFrame()) {
 			for (auto c : getChildrenExt()) c->setVisible(false);
-			this->removeChildByTag("image"_h);
+			removeChildByTag("image"_h);
+
+			setContentSize({ 30.f, 30.f });
 
 			auto image = CCSprite::createWithSpriteFrame(frame);
+			limitNodeSize(image, getContentSize(), 1337.f, 0.0f);
+
 			image->setPosition(this->getContentSize() / 2);
 			image->setColor(this->getColor());
 			image->setOpacity(this->getOpacity());
 			this->addChild(image, 1, "image"_h);
-			this->setContentSize(image->getContentSize());
-			m_width = getContentWidth();
-			m_height = getContentHeight();
-			updateOrientedBox();
 		}
 		else {
 			for (auto c : getChildrenExt()) c->setVisible(true);
-			this->removeChildByTag("image"_h);
+			removeChildByTag("image"_h);
 		}
+		m_width = getContentWidth();
+		m_height = getContentHeight();
+		updateOrientedBox();
 	}
-	void customObjectSetup(gd::vector<gd::string>& p0, gd::vector<void*>& p1) {
+	static TextGameObject* create(cocos2d::CCTexture2D * texture) {
+		auto obj = TextGameObject::create(texture);
+		if (obj) {
+			obj->m_addToNodeContainer = true;
+		}
+		return obj;
+	}
+	void customObjectSetup(gd::vector<gd::string>&p0, gd::vector<void*>&p1) {
 		TextGameObject::customObjectSetup(p0, p1);
-		m_addToNodeContainer = true;
 		trySetupCustomSprite();
 	}
 	void updateTextObject(gd::string p0, bool p1) {
+		if (auto editor = GameManager::get()->m_levelEditorLayer) {
+			if (auto ui = editor->m_editorUI)
+				if (Ref sel = typeinfo_cast<TextGameObject*>(
+					ui->m_selectedObject
+				)) {
+					if (sel.data() != this) p0 = sel->m_text;
+				};
+		}
 		TextGameObject::updateTextObject(p0, p1);
-		trySetupCustomSprite();
+		if (this) unschedule(schedule_selector(TextGameObjectImageExt::trySetupCustomSprite));
+		if (this) scheduleOnce(schedule_selector(TextGameObjectImageExt::trySetupCustomSprite), 0.01f);
 	}
 };

@@ -5,16 +5,16 @@
 		"win": "2.2074",
 		"android": "2.2074"
 	},
-	"id": "lr70.paperdays",
+	"id": "lil2kki.paperdays",
 	"name": "\tPaperdays",
-	"version": "v0.0.0-beta",
-	"developers": [ "LatterRarity70" ],
-	"description": "turns geometry dash to my first game ever",
+	"version": "v2.5.5",
+	"developers": [ "lil2kki" ],
+	"description": "geometry dash fanmade extension but its looks like horror game made in rpg maker",
 	"tags": [ "interface", "offline", "gameplay", "content" ],
 	"links": {
-		"community": "https://discord.gg/6SxAbk3bTA",
-		"homepage": "https://t.me/LatterRarity70_channel",
-		"source": "https://github.com/LatterRarity70/Paperdays"
+		"community": "https://discord.gg/kXjQ8QEWNU",
+		"homepage": "https://t.me/lil2kki_ch",
+		"source": "https://github.com/lil2kki/Paperdays"
 	},
 	"dependencies": {
 		"geode.node-ids": {
@@ -31,6 +31,10 @@
 			"goldFont": {
 				"path": "assets/_handwr.otf",
 				"size": 72
+			},
+			"gjFont01": {
+				"path": "assets////aTravelingTypewriter.ttf",
+				"size": 92
 			},
 			"chatFont": {
 				"path": "assets/aTravelingTypewriter.ttf",

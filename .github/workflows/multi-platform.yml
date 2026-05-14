@@ -21,9 +21,6 @@ jobs:
         - name: Windows
           os: windows-latest
 
-        - name: macOS
-          os: macos-latest
-
         - name: Android64
           os: ubuntu-latest
           target: Android64
@@ -54,15 +51,6 @@ jobs:
         uses: geode-sdk/build-geode-mod/combine@main
         id: build
 
-      - name: "Upload artifact"
-        uses: actions/upload-artifact@v4
-        with:
-          name: Build Output
-          path: ${{ steps.build.outputs.build-output }}
-
-      - name: "Set up Git repository"
-        uses: actions/checkout@v2
-
       - name: "Development Release"
         uses: ncipollo/release-action@v1
         with:
@@ -74,3 +62,9 @@ jobs:
           allowUpdates: true
           artifactErrorsFailBuild: true
           artifacts: "${{steps.build.outputs.build-output}}/*"
+
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build Output
+          path: ${{ steps.build.outputs.build-output }}

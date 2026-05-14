@@ -144,12 +144,12 @@ class $modify(GJBaseGameLayerEventsExt, GJBaseGameLayer) {
 		auto eventID = static_cast<int>(p0);
 		auto audio = FMODAudioEngine::get();
 		for (auto p : { m_player1, m_player2 }) if (p and not p->m_isHidden) {
-			if ((eventID == 71 or eventID == 73) and p->m_isOnGround and p->m_isRobot) audio->playEffect("step_jump.ogg", 1.f, 1.f, 0.5f);
+			if ((eventID == 71 or eventID == 73) and p->m_isOnGround and !p->m_isSpider) audio->playEffect("step_jump.ogg", 1.f, 1.f, 0.5f);
 			if (eventID >= 2 and eventID <= 5) {//landing
-				if (p->m_isRobot) audio->playEffect("step_landing.ogg", 1.f, 1.f / eventID, 0.9f + (eventID / 10));
+				if (!p->m_isSpider) audio->playEffect("step_landing.ogg", 1.f, 1.f / eventID, 0.9f + (eventID / 10));
 			}
 			if (eventID >= 12 and eventID <= 13) {//jump
-				if (p->m_isRobot) {
+				if (!p->m_isSpider) {
 					if (!p->getActionByTag(5718932)) {
 						auto jump_anim = CCSequence::create(
 							CCEaseBackOut::create(CCScaleTo::create(
@@ -181,7 +181,10 @@ class $modify(PlayerObjectExt, PlayerObject) {
 		float m_lastXV = 0.1;
 		float m_lastYV = 0.1;
 	};
-	bool init(int p0, int p1, GJBaseGameLayer* p2, cocos2d::CCLayer* p3, bool p4) {
+	bool isCube() {
+		return !m_isShip && !m_isBall && !m_isBird && !m_isDart && !m_isRobot && !m_isSpider && !m_isSwing;
+	}
+	bool init(int p0, int p1, GJBaseGameLayer * p2, cocos2d::CCLayer * p3, bool p4) {
 		if (!PlayerObject::init(p0, p1, p2, p3, p4)) return false;
 		m_fields->self = this;
 
@@ -196,7 +199,7 @@ class $modify(PlayerObjectExt, PlayerObject) {
 		GameToolbox::particleFromString(land, this->m_landParticles0, 0)->setUserObject("ps"_spr, CCStringMake(land));
 		GameToolbox::particleFromString(land, this->m_landParticles1, 0)->setUserObject("ps"_spr, CCStringMake(land));
 
-		
+
 		//add animations
 #define anim(name, amount, speed)																								\
 		auto name = CCSprite::createWithSpriteFrameName(#name"1.png"_spr);														\
@@ -238,6 +241,15 @@ class $modify(PlayerObjectExt, PlayerObject) {
 		);
 
 		return true;
+	}
+	void runNormalRotation(bool notNormalMode, float speed) {
+
+	}
+	void updateRotation(float dt) {
+		auto wasRobot = m_isRobot;
+		m_isRobot = true;
+		PlayerObject::updateRotation(dt);
+		m_isRobot = wasRobot;
 	}
 	void updateJump(float p0) {
 		if (!m_isSpider) PlayerObject::updateJump(p0);
@@ -310,13 +322,15 @@ class $modify(PlayerObjectExt, PlayerObject) {
 			));
 		}
 	}
-	void ringJump(RingObject* p0, bool p1) {
+	void ringJump(RingObject * p0, bool p1) {
 		if (m_isSpider) m_holdingButtons[5] ? PlayerObject::ringJump(p0, p1) : void();
 		else PlayerObject::ringJump(p0, p1);
 	};
 	void update(float p0) {
 
 		if (this->m_gameLayer != GameManager::get()->m_gameLayer) return PlayerObject::update(p0);
+
+		m_platformerXVelocity = m_isPlatformer ? m_platformerXVelocity : (1.f);
 
 		m_fields->m_lastXV =
 			fabs(this->m_platformerXVelocity) > 0.001f ?
@@ -329,7 +343,7 @@ class $modify(PlayerObjectExt, PlayerObject) {
 		m_yVelocity = m_isUpsideDown ? -m_yVelocity : m_yVelocity;
 
 #define in_range(tar, from, to) (tar >= from and tar <= to)
-		bool showAnimPlr = (this->m_isRobot);
+		bool showAnimPlr = (!m_isSpider and !m_isShip and !m_isBird and !m_isBall and !m_isDart and !m_isSwing);
 		bool showTopAnimPlr = (this->m_isSpider);
 		bool isOnAir = !this->m_isOnGround or !in_range(m_yVelocity, -5.2f, 5.2f);
 		bool isStanding = fabs(this->m_platformerXVelocity) < 0.25f;
@@ -337,8 +351,8 @@ class $modify(PlayerObjectExt, PlayerObject) {
 		CCSize size = { 15.000f, 30.000f };
 		CCSize size2 = { 15.000f, 3.000f };
 		CCSize def_size = { 30.000f, 30.000f };
-		auto& plrSZ = showAnimPlr or showTopAnimPlr ? 
-			(showAnimPlr ? size : size2) 
+		auto& plrSZ = showAnimPlr or showTopAnimPlr ?
+			(showAnimPlr ? size : size2)
 			: def_size;
 		this->m_obContentSize = plrSZ;
 		this->m_objectRect.size = plrSZ;
@@ -741,9 +755,9 @@ class $modify(JSUILayer, UILayer) {
 		joystick->setVisible(show);
 		if (joystick->isTouchEnabled() != show) {
 			joystick->setTouchEnabled(show);
-			if (!joystick->m_currentInput.equals({ 0, 0 })) 
+			if (!joystick->m_currentInput.equals({ 0, 0 }))
 				joystick->handleInput(m_gameLayer, { 0, 0 }, joystick->m_currentInput);
-			for (auto a : m_gameLayer->m_player1->m_holdingButtons) 
+			for (auto a : m_gameLayer->m_player1->m_holdingButtons)
 				m_gameLayer->m_player1->m_holdingButtons[a.first] = false;
 		}
 

@@ -4,63 +4,48 @@
     <dict>
         <key>frames</key>
         <dict>
-            <key>bird_01_001.png</key>
+            <key>jetpack_01_001.png</key>
             <dict>
                 <key>aliases</key>
                 <array/>
                 <key>spriteOffset</key>
-                <string>{0,0}</string>
+                <string>{3,-1}</string>
                 <key>spriteSize</key>
-                <string>{37,16}</string>
+                <string>{77,69}</string>
                 <key>spriteSourceSize</key>
-                <string>{37,16}</string>
+                <string>{83,71}</string>
                 <key>textureRect</key>
-                <string>{{2,22},{37,16}}</string>
+                <string>{{85,2},{77,69}}</string>
+                <key>textureRotated</key>
+                <false/>
+            </dict>
+            <key>jetpack_01_2_001.png</key>
+            <dict>
+                <key>aliases</key>
+                <array/>
+                <key>spriteOffset</key>
+                <string>{3,1}</string>
+                <key>spriteSize</key>
+                <string>{73,58}</string>
+                <key>spriteSourceSize</key>
+                <string>{79,60}</string>
+                <key>textureRect</key>
+                <string>{{164,2},{73,58}}</string>
                 <key>textureRotated</key>
                 <true/>
             </dict>
-            <key>bird_01_2_001.png</key>
+            <key>jetpack_01_glow_001.png</key>
             <dict>
                 <key>aliases</key>
                 <array/>
                 <key>spriteOffset</key>
-                <string>{0,0}</string>
+                <string>{3,-1}</string>
                 <key>spriteSize</key>
-                <string>{35,14}</string>
+                <string>{81,73}</string>
                 <key>spriteSourceSize</key>
-                <string>{35,14}</string>
+                <string>{87,75}</string>
                 <key>textureRect</key>
-                <string>{{20,22},{35,14}}</string>
-                <key>textureRotated</key>
-                <false/>
-            </dict>
-            <key>bird_01_3_001.png</key>
-            <dict>
-                <key>aliases</key>
-                <array/>
-                <key>spriteOffset</key>
-                <string>{0,14}</string>
-                <key>spriteSize</key>
-                <string>{31,21}</string>
-                <key>spriteSourceSize</key>
-                <string>{31,49}</string>
-                <key>textureRect</key>
-                <string>{{20,38},{31,21}}</string>
-                <key>textureRotated</key>
-                <false/>
-            </dict>
-            <key>bird_01_glow_001.png</key>
-            <dict>
-                <key>aliases</key>
-                <array/>
-                <key>spriteOffset</key>
-                <string>{0,0}</string>
-                <key>spriteSize</key>
-                <string>{39,18}</string>
-                <key>spriteSourceSize</key>
-                <string>{39,18}</string>
-                <key>textureRect</key>
-                <string>{{2,2},{39,18}}</string>
+                <string>{{2,2},{81,73}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
@@ -74,13 +59,13 @@
             <key>premultiplyAlpha</key>
             <false/>
             <key>realTextureFileName</key>
-            <string>icons/bird_01.png</string>
+            <string>icons/jetpack_01-hd.png</string>
             <key>size</key>
-            <string>{57,61}</string>
+            <string>{224,77}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:59d3dfef0512a26c32bc2e51bef6fc96:7a442eaf1d0ba05930986047e4e415cf:b2e7c975fdaab78b7ea38df5a88334a9$</string>
+            <string>$TexturePacker:SmartUpdate:ce1b6e42fc8a031872838dd7d4fbd04f:2bc4cedd2a127b22e7c0675ac194a336:ecf21592f2e56971614d51c4ea2803ae$</string>
             <key>textureFileName</key>
-            <string>icons/bird_01.png</string>
+            <string>icons/jetpack_01-hd.png</string>
         </dict>
     </dict>
 </plist>
