@@ -45,7 +45,7 @@ class $modify(UILayerPlayerKeysExt, UILayer) {
 		asd = key == KEY_Down ? true : asd;
 		asd = key == KEY_S ? true : asd;
 		if (!asd) return;
-		for (auto p : { m_gameLayer->m_player1, m_gameLayer->m_player2 }) if (p) {
+		for (auto p : { m_gameLayer->m_player2 }) if (p) {
 			p->m_holdingButtons[0] = p1;
 		}
 	}
@@ -55,7 +55,7 @@ class $modify(UILayerPlayerKeysExt, UILayer) {
 		asd = key == KEY_Enter ? true : asd;
 		asd = key == KEY_Z ? true : asd;
 		if (!asd) return;
-		Ref p = m_gameLayer->m_player1;
+		Ref p = m_gameLayer->m_player2;
 		if (!p) return;
 		p->m_holdingButtons[5] = pressed;
 		if (pressed and !p->m_holdingButtons[1]) {
@@ -86,7 +86,7 @@ class $modify(UILayerPlayerKeysExt, UILayer) {
 			if (animatedSprite) animatedSprite->resumeSchedulerAndActions();
 			return;
 		}
-		Ref plr = m_gameLayer->m_player1;
+		Ref plr = m_gameLayer->m_player2;
 		animatedSprite = cocos::findFirstChildRecursive<CCSprite>(plr,
 			[](CCSprite* node) {
 				if (!string::contains(node->getID(), GEODE_MOD_ID)) return false;
@@ -143,7 +143,7 @@ class $modify(GJBaseGameLayerEventsExt, GJBaseGameLayer) {
 	void gameEventTriggered(GJGameEvent p0, int p1, int p2) {
 		auto eventID = static_cast<int>(p0);
 		auto audio = FMODAudioEngine::get();
-		for (auto p : { m_player1, m_player2 }) if (p and not p->m_isHidden) {
+		for (auto p : { m_player2 }) if (p and not p->m_isHidden) {
 			if ((eventID == 71 or eventID == 73) and p->m_isOnGround and !p->m_isSpider) audio->playEffect("step_jump.ogg", 1.f, 1.f, 0.5f);
 			if (eventID >= 2 and eventID <= 5) {//landing
 				if (!p->m_isSpider) audio->playEffect("step_landing.ogg", 1.f, 1.f / eventID, 0.9f + (eventID / 10));
@@ -234,7 +234,7 @@ class $modify(PlayerObjectExt, PlayerObject) {
 			[_this = Ref(this)] {
 				auto& gameLayer = GameManager::get()->m_gameLayer;
 				if (!gameLayer) return;
-				if (gameLayer->m_player1 == _this.data()) {
+				if (gameLayer->m_player2 == _this.data()) {
 					_this->addAllParticles();
 				}
 			}
@@ -747,9 +747,8 @@ class $modify(JSUILayer, UILayer) {
 		Ref joystick = m_fields->m_joystickNode;
 
 		auto show = true;
-		//!m_inPlatformer or !m_gameLayer->m_player1->m_isSpider or (dialog and dialog->isRunning())
-		show = !m_inPlatformer ? false : show;
-		show = !m_gameLayer->m_player1->m_isSpider ? false : show;
+		//!m_inPlatformer or !m_gameLayer->m_player2->m_isSpider or (dialog and dialog->isRunning())
+		show = !m_gameLayer->m_player2->m_isSpider ? false : show;
 		show = (dialog and dialog->isRunning()) ? false : show;
 
 		joystick->setVisible(show);
@@ -757,8 +756,8 @@ class $modify(JSUILayer, UILayer) {
 			joystick->setTouchEnabled(show);
 			if (!joystick->m_currentInput.equals({ 0, 0 }))
 				joystick->handleInput(m_gameLayer, { 0, 0 }, joystick->m_currentInput);
-			for (auto a : m_gameLayer->m_player1->m_holdingButtons)
-				m_gameLayer->m_player1->m_holdingButtons[a.first] = false;
+			for (auto a : m_gameLayer->m_player2->m_holdingButtons)
+				m_gameLayer->m_player2->m_holdingButtons[a.first] = false;
 		}
 
 		if (auto p1move = getChildByType<GJUINode>(0)) {
