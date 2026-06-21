@@ -182,7 +182,7 @@ class $modify(PlayerObjectExt, PlayerObject) {
 		float m_lastYV = 0.1;
 	};
 	bool isCube() {
-		return !m_isShip && !m_isBall && !m_isBird && !m_isDart && !m_isSpider && !m_isSwing;
+		return !m_isShip && !m_isBall && !m_isBird && !m_isDart && !m_isRobot && !m_isSpider && !m_isSwing;
 	}
 	bool init(int p0, int p1, GJBaseGameLayer * p2, cocos2d::CCLayer * p3, bool p4) {
 		if (!PlayerObject::init(p0, p1, p2, p3, p4)) return false;
