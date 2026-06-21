@@ -36,7 +36,7 @@ class $modify(UILayerPlayerKeysExt, UILayer) {
 		if (!UILayer::init(p0)) return false;
 		return true;
 	};
-	void downButtonUpdate(enumKeyCodes key, bool p1) {
+	void downButtonUpdate(enumKeyCodes key, bool p2) {
 		auto asd = false;
 		asd = key == CONTROLLER_LTHUMBSTICK_DOWN ? true : asd;
 		asd = key == CONTROLLER_RTHUMBSTICK_DOWN ? true : asd;
@@ -45,8 +45,8 @@ class $modify(UILayerPlayerKeysExt, UILayer) {
 		asd = key == KEY_Down ? true : asd;
 		asd = key == KEY_S ? true : asd;
 		if (!asd) return;
-		for (auto p : { m_gameLayer->m_player2 }) if (p) {
-			p->m_holdingButtons[0] = p1;
+		for (auto p : { m_gameLayer->m_player1, m_gameLayer->m_player2 }) if (p) {
+			p->m_holdingButtons[0] = p2;
 		}
 	}
 	void actionButtonUpdate(enumKeyCodes key, bool pressed) {
@@ -119,12 +119,12 @@ class $modify(UILayerPlayerKeysExt, UILayer) {
 			this->runAction(anim);
 		}
 	}
-	void handleKeypress(cocos2d::enumKeyCodes key, bool p1) {
-		UILayer::handleKeypress(key, p1);
-		downButtonUpdate(key, p1);
-		actionButtonUpdate(key, p1);
-		if (key == KEY_E and !p1) handleSkaChaCha();
-		//log::error("{} -> {}", CCKeyboardDispatcher::get()->keyToString(key), p1);
+	void handleKeypress(cocos2d::enumKeyCodes key, bool p2) {
+		UILayer::handleKeypress(key, p2);
+		downButtonUpdate(key, p2);
+		actionButtonUpdate(key, p2);
+		if (key == KEY_E and !p2) handleSkaChaCha();
+		//log::error("{} -> {}", CCKeyboardDispatcher::get()->keyToString(key), p2);
 	}
 };
 
@@ -143,7 +143,7 @@ class $modify(GJBaseGameLayerEventsExt, GJBaseGameLayer) {
 	void gameEventTriggered(GJGameEvent p0, int p1, int p2) {
 		auto eventID = static_cast<int>(p0);
 		auto audio = FMODAudioEngine::get();
-		for (auto p : { m_player2 }) if (p and not p->m_isHidden) {
+		for (auto p : { m_player1, m_player2 }) if (p and not p->m_isHidden) {
 			if ((eventID == 71 or eventID == 73) and p->m_isOnGround and !p->m_isSpider) audio->playEffect("step_jump.ogg", 1.f, 1.f, 0.5f);
 			if (eventID >= 2 and eventID <= 5) {//landing
 				if (!p->m_isSpider) audio->playEffect("step_landing.ogg", 1.f, 1.f / eventID, 0.9f + (eventID / 10));
@@ -760,10 +760,10 @@ class $modify(JSUILayer, UILayer) {
 				m_gameLayer->m_player2->m_holdingButtons[a.first] = false;
 		}
 
-		if (auto p1move = getChildByType<GJUINode>(0)) {
-			p1move->setScale(!show);
-			joystick->setVisible(show and p1move->isVisible());
-			if (auto a = p1move->m_firstSprite) joystick->setOpacity(a->getOpacity());
+		if (auto p2move = getChildByType<GJUINode>(0)) {
+			p2move->setScale(!show);
+			joystick->setVisible(show and p2move->isVisible());
+			if (auto a = p2move->m_firstSprite) joystick->setOpacity(a->getOpacity());
 		};
 	}
 };
