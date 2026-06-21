@@ -19,10 +19,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/sr
 
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
-file(DOWNLOAD "https://github.com/lil2kki/geode-download-dependency-cmake/blob/main/.cmake?raw=true" ${CMAKE_CURRENT_BINARY_DIR}/geode-download-dependency.cmake)
-include(${CMAKE_CURRENT_BINARY_DIR}/geode-download-dependency.cmake)
-download_dependency_mod(lil2kki/geode-game-objects-factory user95401.game-objects-factory FALSE)
-
 target_include_directories(${PROJECT_NAME} PUBLIC "${GEODE_DEPS_DIR}")
 
 setup_geode_mod(${PROJECT_NAME})

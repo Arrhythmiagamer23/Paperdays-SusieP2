@@ -6,8 +6,8 @@
 		"android": "2.2081"
 	},
 	"id": "roadhogstudios.susie",
-	"name": "\tPaperdays Susie P2",
-	"version": "v2.5.5",
+	"name": "Paperdays Susie P2",
+	"version": "v1.0.0",
 	"developers": [ "lil2kki" ],
 	"description": "geometry dash fanmade extension but susie is player two.",
 	"tags": [ "interface", "offline", "gameplay", "content" ],
